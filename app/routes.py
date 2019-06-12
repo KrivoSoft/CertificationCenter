@@ -20,13 +20,48 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #  
-#  
-# -*- coding: utf-8 -*- 
+#
+
+from datetime import datetime
 from flask import render_template
 from app import app
 
+# Привязка функции к URL-адресу
 @app.route('/')
 @app.route('/index')
 def index():
-    example_text = "Hello, World!"
-    return render_template('index.html', title='Home', example_text=example_text)
+    return render_template('index.html', title='Home', all_cert = all_cert)
+    
+    
+@app.route('/all_certificates')
+def all_certificates():
+    return render_template('all_certificates.html', title='all_certificates', all_cert = all_cert)
+
+
+class Certificate():
+	# Создание нового сертифката и добавление его в список всех сертификатов
+	def __init__(self, time_start, time_end, subject, issuer):
+		self.time_start = datetime.strptime(time_start, "%d-%m-%Y")
+		self.time_end = datetime.strptime(time_end, "%d-%m-%Y")
+		self.subject = subject
+		self.issuer = issuer
+		all_cert.append(self)
+	
+	
+	# Проверка на валидность сертификата
+	def IsValid(cert):
+		now = datetime.now()
+		if (cert.time_end >= now) & (cert.time_start <= now):
+			return True
+		else:
+			return False
+	
+	
+all_cert = []
+Certificate('01-01-1990', '01-01-2010', 'personal-site.com', 'CertCenter')
+Certificate('01-09-2019', '01-01-2020', 'big-company.com', 'CertCenter')
+Certificate('01-01-2018', '01-09-2019', 'my-site.com', 'CertCenter')
+print (Certificate.IsValid(all_cert[0])) # False
+print (Certificate.IsValid(all_cert[1])) # False
+print (Certificate.IsValid(all_cert[2])) # True
+

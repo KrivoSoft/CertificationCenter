@@ -1,5 +1,5 @@
 <!--
-   index.html
+   all_certificates.html
    
    Copyright 2019 Marka <marka@evil>
    
@@ -23,7 +23,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h3>Домашнаяя страница сертификационного центра</h3>
+<table>
+    <thead>
+        <tr>
+            <th colspan="4">Все сертификаты</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Дата начала действия</td>
+            <td>Дата окончания действия</td>
+            <td>Сайт</td>
+            <td>Издатель сертификата</td>
+        </tr>
+        <!-- Вывод всех сертифкатов в таблицу -->
+        {% for i in range(all_cert|length) %}
+        <tr>
+			
+			<td>{{ all_cert[i].time_start }}</td>
+			<td>{{ all_cert[i].time_end }}</td>
+			<td>{{ all_cert[i].subject }}</td>
+			<td>{{ all_cert[i].issuer }}</td>
+			
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
-
-
