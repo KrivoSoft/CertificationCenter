@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 #
 #  routes.py
 #  
@@ -39,29 +38,27 @@ def all_certificates():
 
 
 class Certificate():
-	# Создание нового сертифката и добавление его в список всех сертификатов
-	def __init__(self, time_start, time_end, subject, issuer):
-		self.time_start = datetime.strptime(time_start, "%d-%m-%Y")
-		self.time_end = datetime.strptime(time_end, "%d-%m-%Y")
-		self.subject = subject
-		self.issuer = issuer
-		all_cert.append(self)
-	
-	
-	# Проверка на валидность сертификата
-	def IsValid(cert):
-		now = datetime.now()
-		if (cert.time_end >= now) & (cert.time_start <= now):
-			return True
-		else:
-			return False
-	
-	
-all_cert = []
-Certificate('01-01-1990', '01-01-2010', 'personal-site.com', 'CertCenter')
-Certificate('01-09-2019', '01-01-2020', 'big-company.com', 'CertCenter')
-Certificate('01-01-2018', '01-09-2019', 'my-site.com', 'CertCenter')
-print (Certificate.IsValid(all_cert[0])) # False
-print (Certificate.IsValid(all_cert[1])) # False
-print (Certificate.IsValid(all_cert[2])) # True
+    # Создание нового сертифката и добавление его в список всех сертификатов
+    def __init__(self, time_start, time_end, subject, issuer):
+        self.time_start = datetime.strptime(time_start, "%d-%m-%Y")
+        self.time_end = datetime.strptime(time_end, "%d-%m-%Y")
+        self.subject = subject
+        self.issuer = issuer           
+    
+    
+    # Проверка на валидность сертификата
+    def IsValid(cert):
+        now = datetime.now()
+        if (cert.time_end >= now) & (cert.time_start <= now):
+            return True
+        else:
+            return False
 
+
+all_cert = []    
+all_cert.append(Certificate('01-01-1990', '01-01-2010', 'personal-site.com', 'CertCenter'))
+all_cert.append(Certificate('01-09-2019', '01-01-2020', 'big-company.com', 'CertCenter'))
+all_cert.append(Certificate('01-01-2018', '01-09-2019', 'my-site.com', 'CertCenter'))
+#~ print (Certificate.IsValid(all_cert[0])) # False
+#~ print (Certificate.IsValid(all_cert[1])) # False
+#~ print (Certificate.IsValid(all_cert[2])) # True
