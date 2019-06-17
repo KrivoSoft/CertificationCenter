@@ -59,6 +59,3 @@ all_cert = []
 all_cert.append(Certificate('01-01-1990', '01-01-2010', 'personal-site.com', 'CertCenter'))
 all_cert.append(Certificate('01-09-2019', '01-01-2020', 'big-company.com', 'CertCenter'))
 all_cert.append(Certificate('01-01-2018', '01-09-2019', 'my-site.com', 'CertCenter'))
-#~ print (Certificate.IsValid(all_cert[0])) # False
-#~ print (Certificate.IsValid(all_cert[1])) # False
-#~ print (Certificate.IsValid(all_cert[2])) # True

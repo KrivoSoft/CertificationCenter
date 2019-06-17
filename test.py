@@ -1,8 +1,6 @@
 import unittest
 import sys
-sys.path.insert(0, 'app/')
-import routes
-
+from app.routes import *
     
 class FlaskrTestCase(unittest.TestCase):
 
@@ -12,7 +10,9 @@ class FlaskrTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_empty_db(self):
+    def test_my_file(self):
+        self.assertFalse(Certificate.IsValid(all_cert[0]))
+        self.assertFalse(Certificate.IsValid(all_cert[1]))
         self.assertTrue(Certificate.IsValid(all_cert[2]))
 
 
