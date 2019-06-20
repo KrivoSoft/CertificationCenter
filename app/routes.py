@@ -24,6 +24,8 @@
 from datetime import datetime
 from flask import render_template
 from app import app
+from pathlib import Path
+from OpenSSL import crypto
 
 # Привязка функции к URL-адресу
 @app.route('/')
@@ -37,11 +39,36 @@ def all_certificates():
     return render_template('all_certificates.html', title='all_certificates', all_cert = all_cert)
 
 
+# Поиск всех сертификатов в директории
+def ShowFiles():
+    p = Path('/home/marka/Загрузки/Folder/').glob('*.crt')
+    files = [x for x in p if x.is_file()]
+    return files
+
+
+def FilesToCert(list_of_files):
+    for certificate in list_of_files:
+        cert = crypto.load_certificate(crypto.FILETYPE_PEM, open(str(certificate)).read())
+        subject = cert.get_subject().CN
+        issuer = cert.get_issuer().CN
+        
+        time_start = cert.get_notBefore()
+        time_start = str(time_start, 'utf-8')
+        time_end = cert.get_notAfter()
+        time_end = str(time_end, 'utf-8')
+        # Приведение строковой даты к виду
+        # Изначальный формат даты: YYYYMMDDhhmmssZ
+        # Преобразование к виду: DD-MM-YYYY-hh-mm
+        time_start = time_start[6:8] + '-' + time_start[4:6] + '-' + time_start[:4] + '-' + time_start[8:10] + '-' + time_start[10:12]
+        time_end = time_end[6:8] + '-' + time_end[4:6] + '-' + time_end[:4] + '-' + time_end[8:10] + '-' + time_end[10:12]
+        all_cert.append(Certificate(time_start, time_end, subject, issuer))
+            
+    
 class Certificate():
     # Создание нового сертифката и добавление его в список всех сертификатов
     def __init__(self, time_start, time_end, subject, issuer):
-        self.time_start = datetime.strptime(time_start, "%d-%m-%Y")
-        self.time_end = datetime.strptime(time_end, "%d-%m-%Y")
+        self.time_start = datetime.strptime(time_start, "%d-%m-%Y-%H-%M")
+        self.time_end = datetime.strptime(time_end, "%d-%m-%Y-%H-%M")
         self.subject = subject
         self.issuer = issuer           
     
@@ -56,6 +83,8 @@ class Certificate():
 
 
 all_cert = []    
-all_cert.append(Certificate('01-01-1990', '01-01-2010', 'personal-site.com', 'CertCenter'))
-all_cert.append(Certificate('01-09-2019', '01-01-2020', 'big-company.com', 'CertCenter'))
-all_cert.append(Certificate('01-01-2018', '01-09-2019', 'my-site.com', 'CertCenter'))
+all_cert.append(Certificate('01-01-1990-00-00', '01-01-2010-00-00', 'personal-site.com', 'CertCenter'))
+all_cert.append(Certificate('01-09-2019-00-00', '01-01-2020-00-00', 'big-company.com', 'CertCenter'))
+all_cert.append(Certificate('01-01-2018-00-00', '01-09-2019-00-00', 'my-site.com', 'CertCenter'))
+MyCert = ShowFiles()
+FilesToCert(MyCert)
