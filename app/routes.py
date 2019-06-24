@@ -27,10 +27,9 @@ from flask import render_template
 from app import app
 from pathlib import Path
 from OpenSSL import crypto
-from Crypto.Util import asn1
 
 path_to_public_cert = '/home/marka/Загрузки/Folder/'
-path_to_private_key = '/home/marka/Загрузки/Folder/trusted.key'
+path_to_trusted_cert = '/home/marka/Загрузки/Folder/trusted_cert/ca.crt'
 
 
 @app.route('/')
@@ -68,33 +67,23 @@ def info_about_cert(certificate):
     return time_start, time_end, subject, issuer
 
 
-def check_certificate(doubtful_certificate, private_key):
-    '''Проверка совпадают ли сертификат с закрытым ключом'''
+def check_certificate(doubtful_certificate, trusted_cert):
+    '''Подтверждение сертификата'''
     
-    # Загружаем сертификат и ключ
-    open_cert = open(str(doubtful_certificate)).read()
-    doubtful_certificate = crypto.load_certificate(crypto.FILETYPE_PEM, open_cert)
-    doubtful_certificate = doubtful_certificate.get_pubkey()    
-    open_key = open(str(private_key)).read()
-    private_key = Path(private_key)
-    private_key = crypto.load_privatekey(crypto.FILETYPE_PEM, open_key)
+    # Загружаем доверенный и проверяемый сертификаты
+    doubtful_certificate = open(str(doubtful_certificate)).read()
+    doubtful_certificate = crypto.load_certificate(crypto.FILETYPE_PEM, doubtful_certificate)    
+    open_key = open(trusted_cert).read()
+    trusted_cert = Path(trusted_cert)
+    trusted_cert = crypto.load_certificate(crypto.FILETYPE_PEM, open_key)
     
-    pub_asn1=crypto.dump_privatekey(crypto.FILETYPE_ASN1, doubtful_certificate)
-    priv_asn1=crypto.dump_privatekey(crypto.FILETYPE_ASN1, private_key)
-    
-    # Расшифровываем DER
-    pub_der=asn1.DerSequence()
-    pub_der.decode(pub_asn1)
-    priv_der=asn1.DerSequence()
-    priv_der.decode(priv_asn1)
-    
-    # Получаем модуль
-    pub_modulus=pub_der[1]
-    priv_modulus=priv_der[1]
-     
-    if pub_modulus == priv_modulus:
+    store = crypto.X509Store()
+    store.add_cert(trusted_cert)
+    store_ctx = crypto.X509StoreContext(store, doubtful_certificate)
+    try:
+        result = store_ctx.verify_certificate()
         return True
-    else:
+    except crypto.X509StoreContextError as e:
         return False
         
     
@@ -126,5 +115,5 @@ all_cert = []
 certs_in_directory = search_for_certificates(path_to_public_cert)
 for one_cert in certs_in_directory:
     time1, time2, who_to, who_from = info_about_cert(one_cert)
-    if check_certificate(one_cert, path_to_private_key) == True:
+    if check_certificate(one_cert, path_to_trusted_cert) == True:
         all_cert.append(Certificate(time1, time2, who_to, who_from))
