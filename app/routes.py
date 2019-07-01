@@ -27,10 +27,13 @@ from flask import render_template
 from app import app
 from pathlib import Path
 from OpenSSL import crypto
+import subprocess
+import os
 
-path_to_public_cert = '/home/marka/Загрузки/Folder/'
-path_to_trusted_cert = '/home/marka/Загрузки/Folder/trusted_cert/ca.crt'
-
+path_to_public_cert = 'easy-rsa/keys'
+path_to_trusted_cert = 'easy-rsa/keys/ca.crt'
+path_to_project = '/home/marka/Документы/Practice'
+path_to_crl = 'easy-rsa/keys/crl.pem'
 
 @app.route('/')
 @app.route('/index')
@@ -65,26 +68,6 @@ def info_about_cert(certificate):
     time_end = str(time_end, 'utf-8')
     time_end = datetime.strptime(time_end, "%Y%m%d%H%M%SZ")
     return time_start, time_end, subject, issuer
-
-
-def check_certificate(doubtful_certificate, trusted_cert):
-    '''Подтверждение сертификата'''
-    
-    # Загружаем доверенный и проверяемый сертификаты
-    doubtful_certificate = open(str(doubtful_certificate)).read()
-    doubtful_certificate = crypto.load_certificate(crypto.FILETYPE_PEM, doubtful_certificate)    
-    open_key = open(trusted_cert).read()
-    trusted_cert = Path(trusted_cert)
-    trusted_cert = crypto.load_certificate(crypto.FILETYPE_PEM, open_key)
-    
-    store = crypto.X509Store()
-    store.add_cert(trusted_cert)
-    store_ctx = crypto.X509StoreContext(store, doubtful_certificate)
-    try:
-        result = store_ctx.verify_certificate()
-        return True
-    except crypto.X509StoreContextError as e:
-        return False
         
     
 class Certificate():
@@ -108,12 +91,70 @@ class Certificate():
             return True
         else:
             return False
+    
+    def revoke_certificate(client_name, config_file):
+        """Отзыв сертфииката с помощью easy-rsa"""
+        os.chdir('easy-rsa')
+          
+        command = "source vars"
+        my_call = subprocess.call(command, shell=True, executable='/bin/bash')
+        
+        command = " ".join(["sh","revoke-full", client_name])
+        my_call = subprocess.call(command, shell=True, executable='/bin/bash')
+        
+        os.chdir(path_to_project)
+        return my_call
+    
+    def signed_by_ca_cert(doubtful_cert, trusted_cert):
+        '''Подтверждение сертификата'''
+        # Загружаем доверенный и проверяемый сертификаты
+        doubtful_cert = open(str(doubtful_cert)).read()
+        doubtful_cert = crypto.load_certificate(crypto.FILETYPE_PEM, doubtful_cert)    
+        open_key = open(trusted_cert).read()
+        trusted_cert = Path(trusted_cert)
+        trusted_cert = crypto.load_certificate(crypto.FILETYPE_PEM, open_key)
+
+        store = crypto.X509Store()
+        store.add_cert(trusted_cert)
+        store_ctx = crypto.X509StoreContext(store, doubtful_cert)
+        try:
+            result = store_ctx.verify_certificate()
+            return True
+        except crypto.X509StoreContextError as e:
+            return False
+            
+    def is_in_crl(doubtful_cert):
+        '''Проверка есть ли сертификат в CRL-файле'''
+        # Загружаем CRL-файл
+        open_crl = open(path_to_crl).read()
+        crl_pem = crypto.load_crl(crypto.FILETYPE_PEM, open_crl)
+        
+        # Загружаем сертификат
+        doubtful_cert = open(str(doubtful_cert)).read()
+        doubtful_cert = crypto.load_certificate(crypto.FILETYPE_PEM, doubtful_cert)
+        serial_number = doubtful_cert.get_serial_number()
+
+        list_revoked_certs = []
+        revoked_certs = crl_pem.get_revoked()
+        
+        # Сохраняем все серийные номера в массив
+        for serial_num in revoked_certs:
+            decoded_number = int(serial_num.get_serial())
+            list_revoked_certs.append(decoded_number)
+        
+        if serial_number in list_revoked_certs:
+            return True
+        else:
+            return False
 
 
+os.chdir(path_to_project)            
 all_cert = []
 
 certs_in_directory = search_for_certificates(path_to_public_cert)
 for one_cert in certs_in_directory:
     time1, time2, who_to, who_from = info_about_cert(one_cert)
-    if check_certificate(one_cert, path_to_trusted_cert) == True:
-        all_cert.append(Certificate(time1, time2, who_to, who_from))
+    if Certificate.signed_by_ca_cert(one_cert, path_to_trusted_cert) == True:
+        if Certificate.is_in_crl(one_cert) == False:
+            all_cert.append(Certificate(time1, time2, who_to, who_from))
+   
