@@ -29,6 +29,8 @@ from pathlib import Path
 from OpenSSL import crypto
 import subprocess
 import os
+import pexpect
+
 
 path_to_public_cert = 'easy-rsa/keys'
 path_to_trusted_cert = 'easy-rsa/keys/ca.crt'
@@ -146,10 +148,68 @@ class Certificate():
             return True
         else:
             return False
+            
+    def create_cert(client_name, country, oblast, city, company, unit, cn, name, email): 
+        """Создание ключа, запроса на сертификат и сертификата клиента"""
+        os.chdir('easy-rsa/')
+        
+        command = "bash"
+        child = pexpect.spawn(command)
+        
+        command_to_run = "source vars"
+        child.sendline(command_to_run)
+                
+        command_to_run = " ".join(['./build-key', client_name])
+        child.sendline(command_to_run)
 
+        string_to_expect = ".*?"
+        child.expect(string_to_expect)
+        child.sendline(country)
+        
+        child.expect(string_to_expect)
+        child.sendline(oblast)
+        
+        child.expect(string_to_expect)
+        child.sendline(city)
+        
+        child.expect(string_to_expect)
+        child.sendline(company)
+        
+        child.expect(string_to_expect)
+        child.sendline(unit)
+        
+        child.expect(string_to_expect)
+        child.sendline(cn)
+        
+        child.expect(string_to_expect)
+        child.sendline(name)
+        
+        child.expect(string_to_expect)
+        child.sendline(email)
+        
+        child.expect(string_to_expect)
+        child.sendcontrol('m')
+        
+        child.expect(string_to_expect)
+        child.sendcontrol('m')
+        
+        child.expect(string_to_expect)
+        child.sendline('y')
+        
+        child.expect(string_to_expect)
+        child.sendline('y')
+        
+        child.expect(string_to_expect)
+        child.sendline('ls')
+        
+        child.close()
+        os.chdir(path_to_project)
+        
 
 os.chdir(path_to_project)            
 all_cert = []
+
+Certificate.create_cert('client26', "RU", "SO", "Ekaterinburg", "SKB", "Unit1", "client26", "client26", "mail@client26.ru")
 
 certs_in_directory = search_for_certificates(path_to_public_cert)
 for one_cert in certs_in_directory:
@@ -157,4 +217,4 @@ for one_cert in certs_in_directory:
     if Certificate.signed_by_ca_cert(one_cert, path_to_trusted_cert) == True:
         if Certificate.is_in_crl(one_cert) == False:
             all_cert.append(Certificate(time1, time2, who_to, who_from))
-   
+
