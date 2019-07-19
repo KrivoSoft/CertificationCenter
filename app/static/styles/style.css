@@ -13,3 +13,10 @@ tfoot {
 	display: inline-block;  
 	margin:10px;
 }
+.input_form {
+	border: 2px #000;
+}
+
+.input_form td{
+	border: 2px #000;
+}

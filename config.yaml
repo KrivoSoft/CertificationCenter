@@ -1,0 +1,4 @@
+# Path to files
+path_to_public_cert: easy-rsa/keys
+path_to_trusted_cert: easy-rsa/keys/ca.crt
+path_to_crl: easy-rsa/keys/crl.pem
