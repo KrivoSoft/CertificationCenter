@@ -24,7 +24,6 @@
 from datetime import datetime
 from pathlib import Path
 from OpenSSL import crypto
-import subprocess
 import os
 import pexpect
 import yaml
@@ -44,18 +43,30 @@ def info_about_cert(certificate):
     """Извлечение информации о сертификате."""
     our_cert = open(str(certificate)).read()
     cert = crypto.load_certificate(crypto.FILETYPE_PEM, our_cert)
-    subject = cert.get_subject().CN
-    issuer = cert.get_issuer().CN
     time_start = cert.get_notBefore()
     time_start = str(time_start, 'utf-8')
     time_start = datetime.strptime(time_start, "%Y%m%d%H%M%SZ")
     time_end = cert.get_notAfter()
     time_end = str(time_end, 'utf-8')
     time_end = datetime.strptime(time_end, "%Y%m%d%H%M%SZ")
-    return time_start, time_end, subject, issuer
+    data_list = {
+            'country': cert.get_subject().C,
+            'oblast': cert.get_subject().ST,
+            'city': cert.get_subject().L,
+            'company': cert.get_subject().O,
+            'unit': cert.get_subject().OU,
+            'common_name': cert.get_subject().CN,
+            'issuer': cert.get_issuer().CN,
+            'email': cert.get_subject().emailAddress,
+            'time_start': time_start,
+            'time_end': time_end
+    }
+
+    return data_list
 
 
 def load_certs():
+    '''Загружает сертификаты в директории'''
     all_cert = []
 
     # Загружаем пути из конфигурационного файла
@@ -66,26 +77,44 @@ def load_certs():
 
     certs_in_directory = search_for_certificates(path_to_public_cert)
     for one_cert in certs_in_directory:
-        time1, time2, who_to, who_from = info_about_cert(one_cert)
+        dict_with_info = info_about_cert(one_cert)
         if Certificate.signed_by_ca(one_cert, path_to_trusted_cert) is True:
             if Certificate.is_in_crl(one_cert) is False:
-                all_cert.append(Certificate(time1, time2, who_to, who_from))
+                all_cert.append(Certificate(dict_with_info))
     return all_cert
 
 
 class Certificate():
-    def __init__(self, time_start, time_end, subject, issuer):
+    def __init__(self, data_list):
         """Создание нового сертифката."""
+        country = data_list.get('country')
+        oblast = data_list.get('oblast')
+        city = data_list.get('city')
+        company = data_list.get('company')
+        unit = data_list.get('unit')
+        common_name = data_list.get('common_name')
+        issuer = data_list.get('issuer')
+        email = data_list.get('email')
+        time_start = data_list.get('time_start')
+        time_end = data_list.get('time_end')
+
+        to_time = datetime.strptime
         if type(time_start) is str:
-            self.time_start = datetime.strptime(time_start, "%d-%m-%Y-%H-%M")
+            self.time_start = to_time(time_start, "%d-%m-%Y-%H-%M")
         else:
             self.time_start = time_start
         if type(time_end) is str:
-            self.time_end = datetime.strptime(time_end, "%d-%m-%Y-%H-%M")
+            self.time_end = to_time(time_end, "%d-%m-%Y-%H-%M")
         else:
             self.time_end = time_end
-        self.subject = subject
+        self.common_name = common_name
         self.issuer = issuer
+        self.country = country
+        self.oblast = oblast
+        self.city = city
+        self.company = company
+        self.unit = unit
+        self.email = email
 
     def is_valid(cert):
         """Проверка срока действия сертификата."""
@@ -95,18 +124,22 @@ class Certificate():
         else:
             return False
 
-    def revoke_certificate(client_name, config_file):
+    def revoke_certificate(client_name):
         """Отзыв сертфииката с помощью easy-rsa"""
         os.chdir('easy-rsa')
 
-        command = "source vars"
-        my_call = subprocess.call(command, shell=True, executable='/bin/bash')
+        child = pexpect.spawn('bash')
 
-        command = " ".join(["sh", "revoke-full", client_name])
-        my_call = subprocess.call(command, shell=True, executable='/bin/bash')
+        command_to_run = "source vars"
+        child.sendline(command_to_run)
+
+        command_to_run = " ".join(['./revoke-full', client_name])
+        child.sendline(command_to_run)
+
+        child.sendline('ls')
+        child.close()
 
         os.chdir(path_to_project)
-        return my_call
 
     def signed_by_ca(doubtful_cert, trusted_cert):
         '''Подтверждение сертификата'''
@@ -149,7 +182,7 @@ class Certificate():
 
         # Сохраняем все серийные номера в массив
         for serial_num in revoked_certs:
-            decoded_number = int(serial_num.get_serial())
+            decoded_number = int(serial_num.get_serial(), 16)
             list_revoked_certs.append(decoded_number)
 
         if serial_number in list_revoked_certs:
@@ -223,7 +256,8 @@ class Certificate():
         os.chdir(path_to_project)
 
 
-class InputForm(FlaskForm):
+class CreateForm(FlaskForm):
+    '''Форма ввода информации для создания сертификата'''
     country = StringField('Код страны', validators=[DataRequired()])
     oblast = StringField('Область/регион', validators=[DataRequired()])
     city = StringField('Город', validators=[DataRequired()])
@@ -232,6 +266,11 @@ class InputForm(FlaskForm):
     common_name = StringField('Common Name', validators=[DataRequired()])
     name = StringField('Имя', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired()])
+
+
+class RevokeForm(FlaskForm):
+    '''Форма ввода информации для отзыва сертификата'''
+    name = StringField('Имя сертификата ', validators=[DataRequired()])
 
 
 path_to_project = os.path.abspath(os.curdir)

@@ -44,7 +44,7 @@ def all_certificates():
 
 @app.route('/create_certificate', methods=('GET', 'POST'))
 def create_certificate():
-    form = work_with_certs.InputForm()
+    form = work_with_certs.CreateForm()
     if request.method == 'POST' and form.validate():
         data_list = {
             'country': form.country.data,
@@ -58,6 +58,15 @@ def create_certificate():
         }
         work_with_certs.Certificate.create_cert(data_list)
     return render_template('create_certificate.html', title='Create', form=form)
+
+
+@app.route('/revoke', methods=('GET', 'POST'))
+def revoke():
+    form = work_with_certs.RevokeForm()
+    if request.method == 'POST' and form.validate():
+        cert_name = form.name.data
+        work_with_certs.Certificate.revoke_certificate(cert_name)
+    return render_template('revoke.html', title='Revoke', form=form)
 
 
 SECRET_KEY = os.urandom(32)
