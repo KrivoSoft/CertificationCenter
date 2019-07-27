@@ -50,6 +50,7 @@ def info_about_cert(certificate):
     time_end = str(time_end, 'utf-8')
     time_end = datetime.strptime(time_end, "%Y%m%d%H%M%SZ")
     data_list = {
+            'name': certificate.stem,
             'country': cert.get_subject().C,
             'oblast': cert.get_subject().ST,
             'city': cert.get_subject().L,
@@ -87,6 +88,7 @@ def load_certs():
 class Certificate():
     def __init__(self, data_list):
         """Создание нового сертифката."""
+        cert_name = data_list.get('name')
         country = data_list.get('country')
         oblast = data_list.get('oblast')
         city = data_list.get('city')
@@ -107,6 +109,7 @@ class Certificate():
             self.time_end = to_time(time_end, "%d-%m-%Y-%H-%M")
         else:
             self.time_end = time_end
+        self.cert_name = cert_name
         self.common_name = common_name
         self.issuer = issuer
         self.country = country

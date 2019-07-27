@@ -21,16 +21,16 @@
    
 -->
 {% extends "base.html" %}
-
 {% block content %}
 <table class="all_certificates">
     <thead>
         <tr>
-            <th colspan="10">Все сертификаты</th>
+            <th colspan="12">Все сертификаты</th>
         </tr>
     </thead>
     <tbody>
         <tr>
+			<td>Имя сертификата</td>
 			<td>Код страны</td>
             <td>Область</td>
             <td>Город</td>
@@ -42,9 +42,10 @@
             <td>Дата начала действия</td>
             <td>Дата окончания действия</td>
         </tr>
-        <!-- Вывод всех сертифкатов в таблицу -->
+
         {% for i in range(all_cert|length) %}
         <tr>
+			<td>{{ all_cert[i].cert_name }}</td>
 			<td>{{ all_cert[i].country }}</td>
 			<td>{{ all_cert[i].oblast }}</td>
 			<td>{{ all_cert[i].city }}</td>			
@@ -55,8 +56,15 @@
 			<td>{{ all_cert[i].issuer }}</td>			
 			<td>{{ all_cert[i].time_start }}</td>
 			<td>{{ all_cert[i].time_end }}</td>
+			<td>
+				<form action="/all_certificates" method="post">
+					<input style="display:none" type="text" name="rev_this" value="{{all_cert[i].cert_name}}"><br>
+					<input type="submit" value="Отозвать">
+				</form>
+			</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
 {% endblock %}

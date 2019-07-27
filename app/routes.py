@@ -26,7 +26,7 @@ from flask import render_template, request
 from app import app
 from app import work_with_certs
 import os
-
+from werkzeug.datastructures import MultiDict
 
 @app.route('/')
 @app.route('/index')
@@ -35,8 +35,10 @@ def index():
     return render_template('index.html', title='Home')
 
 
-@app.route('/all_certificates')
+@app.route('/all_certificates', methods=('GET', 'POST'))
 def all_certificates():
+    if request.method == 'POST':
+        return revoke(request.form['rev_this'])
     """Привязка функции к URL-адресу."""
     certs = work_with_certs.load_certs()
     return render_template('all_certificates.html', title='All', all_cert=certs)
@@ -57,15 +59,22 @@ def create_certificate():
             'email': form.email.data
         }
         work_with_certs.Certificate.create_cert(data_list)
+        certs = work_with_certs.load_certs()
+        return render_template('all_certificates.html', title='All', all_cert=certs)
     return render_template('create_certificate.html', title='Create', form=form)
 
 
 @app.route('/revoke', methods=('GET', 'POST'))
-def revoke():
+def revoke(revoke_this=None):
     form = work_with_certs.RevokeForm()
+    if revoke_this is not None:
+        form = work_with_certs.RevokeForm(formdata=MultiDict({'name': revoke_this}))
+    print(revoke_this)
     if request.method == 'POST' and form.validate():
         cert_name = form.name.data
         work_with_certs.Certificate.revoke_certificate(cert_name)
+        certs = work_with_certs.load_certs()
+        return render_template('all_certificates.html', title='All', all_cert=certs)
     return render_template('revoke.html', title='Revoke', form=form)
 
 
