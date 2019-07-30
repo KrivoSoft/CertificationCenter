@@ -21,50 +21,49 @@
    
 -->
 {% extends "base.html" %}
+{% import "bootstrap/utils.html" as utils %}
+
 {% block content %}
-<table class="all_certificates">
-    <thead>
-        <tr>
-            <th colspan="12">Все сертификаты</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-			<td>Имя сертификата</td>
-			<td>Код страны</td>
-            <td>Область</td>
-            <td>Город</td>
-            <td>Организация</td>
-            <td>Отдел</td>
-            <td>Email</td>
-            <td>Common Name</td>
-            <td>Издатель сертификата</td>
-            <td>Дата начала действия</td>
-            <td>Дата окончания действия</td>
-        </tr>
-
-        {% for i in range(all_cert|length) %}
-        <tr>
-			<td>{{ all_cert[i].cert_name }}</td>
-			<td>{{ all_cert[i].country }}</td>
-			<td>{{ all_cert[i].oblast }}</td>
-			<td>{{ all_cert[i].city }}</td>			
-			<td>{{ all_cert[i].company }}</td>
-			<td>{{ all_cert[i].unit }}</td>
-			<td>{{ all_cert[i].email }}</td>
-			<td>{{ all_cert[i].common_name }}</td>
-			<td>{{ all_cert[i].issuer }}</td>			
-			<td>{{ all_cert[i].time_start }}</td>
-			<td>{{ all_cert[i].time_end }}</td>
-			<td>
-				<form action="/all_certificates" method="post">
-					<input style="display:none" type="text" name="rev_this" value="{{all_cert[i].cert_name}}"><br>
-					<input type="submit" value="Отозвать">
-				</form>
-			</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
+<div class="container-fluid">
+	<h3>Все сертификаты</h3>
+	<table class="table table-hover table-condensed">
+			<thead>
+				<tr>
+					<th>Имя сертификата</th>
+					<th>Код страны</th>
+					<th>Область</th>
+					<th>Город</th>
+					<th>Организация</th>
+					<th>Отдел</th>
+					<th>Email</th>
+					<th>Common Name</th>
+					<th>Издатель сертификата</th>
+					<th>Дата начала действия</th>
+					<th>Дата окончания действия</th>
+					<th></th>
+				</tr>
+			</thead>
+			{% for i in range(all_cert|length) %}
+			<tr>
+				<td>{{ all_cert[i].cert_name }}</td>
+				<td>{{ all_cert[i].country }}</td>
+				<td>{{ all_cert[i].oblast }}</td>
+				<td>{{ all_cert[i].city }}</td>			
+				<td>{{ all_cert[i].company }}</td>
+				<td>{{ all_cert[i].unit }}</td>
+				<td>{{ all_cert[i].email }}</td>
+				<td>{{ all_cert[i].common_name }}</td>
+				<td>{{ all_cert[i].issuer }}</td>			
+				<td>{{ all_cert[i].time_start }}</td>
+				<td>{{ all_cert[i].time_end }}</td>
+				<td>
+					<form action="/all_certificates" method="post">
+						<input style="display:none" type="text" name="rev_this" value="{{all_cert[i].cert_name}}"><br>
+						<input type="submit" value="Отозвать">
+					</form>
+				</td>
+			</tr>
+			{% endfor %}
+	</table>
+</div>
 {% endblock %}

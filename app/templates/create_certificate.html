@@ -21,51 +21,32 @@
    
 -->
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf%}
 
 {% block content %}
 
-<h3>Создание сертификата</h3>
-<form method="POST" action="/create_certificate">
-    {{ form.csrf_token }}
-    <table class="input_form">
-        <tr>
-            <td>{{ form.name.label }}</td>
-            <td>{{ form.name(size=20) }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.country.label }}</td>
-            <td>{{ form.country(size=20) }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.oblast.label }}</td>
-            <td>{{ form.oblast(size=20) }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.city.label }}</td>
-            <td>{{ form.city(size=20) }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.company.label }}</td>
-            <td>{{ form.company(size=20) }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.unit.label }}</td>
-            <td>{{ form.unit(size=20) }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.common_name.label }}</td>
-            <td>{{ form.common_name(size=20) }}</td>
-        </tr>
-        <tr>
-            <td>{{ form.email.label }}</td>
-            <td>{{ form.email(size=20) }}</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td><input type="submit" value="Отправить"></td>
-        </tr>
-    </table>
-</form>
-
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-md-offset-1">
+            <h3>Создание сертификата</h3>
+            
+            
+            <form method="POST" action="/create_certificate">
+                {{ form.csrf_token }}
+                {{ wtf.form_field(form.name) }}
+                {{ wtf.form_field(form.country) }}
+                {{ wtf.form_field(form.oblast) }}
+                {{ wtf.form_field(form.city) }}
+                {{ wtf.form_field(form.company) }}
+                {{ wtf.form_field(form.unit) }}
+                {{ wtf.form_field(form.common_name) }}
+                {{ wtf.form_field(form.email) }}
+                
+                    <input type="submit" class="btn btn-success" value="Отправить">
+        
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

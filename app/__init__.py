@@ -21,9 +21,11 @@
 #  MA 02110-1301, USA.
 #  
 #  
-
+from flask_bootstrap import Bootstrap
 from flask import Flask
 
 app = Flask(__name__)
 
 from app import routes
+
+bootstrap = Bootstrap(app)

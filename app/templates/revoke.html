@@ -22,23 +22,21 @@
 -->
 
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf%}
 
 {% block content %}
 
-<h3>Отзыв сертификата</h3>
-<form method="POST" action="/revoke">
-    {{ form.csrf_token }}
-    <table class="input_form">
-        <tr>
-            <td>{{ form.name.label }}</td>
-            <td>{{ form.name(size=20) }}</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td><input type="submit" value="Отозвать сертификат"></td>
-        </tr>
-    </table>
-</form>
-
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-md-offset-1">
+            <h3>Отзыв сертификата</h3>
+            <form method="POST" action="/revoke">
+                {{ form.csrf_token }}
+                {{ wtf.form_field(form.name) }}
+                <input type="submit" value="Отозвать сертификат">
+            </form>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

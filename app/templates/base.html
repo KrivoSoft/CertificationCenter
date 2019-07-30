@@ -21,19 +21,30 @@
    
 -->
 
-
+{% extends "bootstrap/base.html" %}
 <!-- Меню сайта -->
 <html>
     <head>
       <title>{{ title }}</title>
-      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/style.css') }}" />
     </head>
     <body>
-        <div class="menu"><a href="/index">Домой</a></div>
-        <div class="menu"><a href="/all_certificates">Все сертификаты</a></div>
-        <div class="menu"><a href="/create_certificate">Создать</a></div>
-        <div class="menu"><a href="/revoke">Удалить</a></div>
-        <hr>
-        {% block content %}{% endblock %}
+		{% block navbar %}
+		<nav class="navbar navbar-default">
+		  <div class="container-fluid">
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			  <ul class="nav navbar-nav">
+				<li><a href="/index">Домой</a></li>
+				<li><a href="/all_certificates">Все сертификаты</a></li>
+				<li><a href="/create_certificate">Создать</a></li>
+				<li><a href="/revoke">Отозвать</a></li>
+			  </ul>
+			</div><!-- /.navbar-collapse -->
+		  </div><!-- /.container-fluid -->
+		</nav>
+		{% endblock %}
+		
+		
+        {% block content %}
+        {% endblock %}
     </body>
 </html>

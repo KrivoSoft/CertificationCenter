@@ -27,6 +27,7 @@ from app import app
 from app import work_with_certs
 import os
 from werkzeug.datastructures import MultiDict
+from flask_wtf import FlaskForm
 
 @app.route('/')
 @app.route('/index')
@@ -49,14 +50,14 @@ def create_certificate():
     form = work_with_certs.CreateForm()
     if request.method == 'POST' and form.validate():
         data_list = {
-            'country': form.country.data,
-            'oblast': form.oblast.data,
-            'city': form.city.data,
-            'company': form.company.data,
-            'unit': form.unit.data,
-            'common_name': form.common_name.data,
-            'name': form.name.data,
-            'email': form.email.data
+            'country': request.form['country'],
+            'oblast': request.form['oblast'],
+            'city': request.form['city'],
+            'company': request.form['company'],
+            'unit': request.form['unit'],
+            'common_name': request.form['common_name'],
+            'name': request.form['name'],
+            'email': request.form['email']
         }
         work_with_certs.Certificate.create_cert(data_list)
         certs = work_with_certs.load_certs()
@@ -69,7 +70,6 @@ def revoke(revoke_this=None):
     form = work_with_certs.RevokeForm()
     if revoke_this is not None:
         form = work_with_certs.RevokeForm(formdata=MultiDict({'name': revoke_this}))
-    print(revoke_this)
     if request.method == 'POST' and form.validate():
         cert_name = form.name.data
         work_with_certs.Certificate.revoke_certificate(cert_name)
