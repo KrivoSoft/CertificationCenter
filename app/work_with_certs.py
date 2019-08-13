@@ -184,10 +184,13 @@ class Certificate():
         revoked_certs = crl_pem.get_revoked()
 
         # Сохраняем все серийные номера в массив
-        for serial_num in revoked_certs:
-            decoded_number = int(serial_num.get_serial(), 16)
-            list_revoked_certs.append(decoded_number)
-
+        try:
+            for serial_num in revoked_certs:
+                decoded_number = int(serial_num.get_serial(), 16)
+                list_revoked_certs.append(decoded_number)
+        except:
+            return False
+            
         if serial_number in list_revoked_certs:
             return True
         else:
